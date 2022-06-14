@@ -95,12 +95,12 @@ jobs:
 
       - name: Read collection metadata from galaxy.yml
         id: identify
-        uses: .github/actions/identify_collection@master
+        uses: Apkawa/github-actions/.github/actions/identify_collection@master
         with:
           source_path: ${{ env.source_directory }}
 
       - name: Build and install the collection
-        uses: .github/actions/build_install_collection@master
+        uses: Apkawa/github-actions/.github/actions/build_install_collection@master
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
