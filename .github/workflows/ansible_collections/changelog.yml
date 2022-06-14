@@ -1,0 +1,20 @@
+name: Changelog required
+on:
+  workflow_call:
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    name: Require a changelog
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+      - name: Ensure a new changelog entry exists
+        run: >-
+          git show origin/${{ github.event.pull_request.base.ref }}..HEAD
+          --name-status
+          --oneline |
+          grep -E -e "A\s+changelogs/fragments/" -e "M\s+CHANGELOG.rst"
