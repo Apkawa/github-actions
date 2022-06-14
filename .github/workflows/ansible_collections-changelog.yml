@@ -13,6 +13,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
       - name: Ensure a new changelog entry exists
+        # TODO fix changelog?
         run: >-
           git show origin/${{ github.event.pull_request.base.ref }}..HEAD
           --name-status
