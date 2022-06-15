@@ -1,0 +1,89 @@
+name: CI_roles
+on:
+  workflow_call:
+    inputs:
+      matrix_exclude:
+        required: false
+        type: string
+        default: >-
+          [
+            {
+              "ansible-version": "stable-2.9",
+              "python-version": "3.9"
+            },
+          ]
+
+jobs:
+
+  roles_matrix:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ansible_collections/community/mongodb
+    outputs:
+      matrix: ${{ steps.json-list.outputs.roles-to-test }}
+
+    steps:
+      -
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
+      - name: Generate module list
+        run: |
+          find roles -maxdepth 2 -mindepth 2 -type d -name molecule | cut -d '/' -f2 | awk NF | jq -sRc 'split("\n") | map(select(length > 0))'
+      - name: Set output variable
+        id: json-list
+        run: |
+          output=$(cat int_test_roles.json)
+          echo "::set-output name=roles-to-test::$output"
+          echo "$output"
+
+  roles:
+    runs-on: ubuntu-20.04
+    needs: roles_matrix
+
+    strategy:
+      matrix:
+        python_version:
+          - "3.7"
+        molecule_distro:
+          - geerlingguy/docker-ubuntu2004-ansible:latest
+        role: ${{ fromJson(needs.roles_matrix.outputs.matrix) }}
+        exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install wheel now for faster builds
+        run: python3 -m pip install wheel --upgrade
+
+      - name: Build and install the collection
+        uses: Apkawa/github-actions/.github/actions/build_install_collection@master
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+
+      - name: Add molecule location to path
+        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Run molecule test for ${{ matrix.mongodb_role }}
+        run: molecule test
+        env:
+          MOLECULE_DISTRO: ${matrix.molecule_distro}
+        working-directory: roles/${{ matrix.mongodb_role }}

@@ -104,7 +104,6 @@ jobs:
           - milestone
           - devel
         python-version:
-          - "3.6"
           - "3.7"
           - "3.8"
           - "3.9"
