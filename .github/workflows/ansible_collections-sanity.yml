@@ -109,7 +109,7 @@ jobs:
           - "3.9"
           - "3.10"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-  
+
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
@@ -124,9 +124,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install ansible-core (${{ matrix.ansible-version }})
-        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
-
       - name: Read collection metadata from galaxy.yml
         id: identify
         uses: Apkawa/github-actions/.github/actions/identify_collection@master
@@ -140,6 +137,12 @@ jobs:
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
+
+      - name: Uninstall old ansible
+        run: python3 -m pip uninstall -q ansible ansible-base ansible-core
+
+      - name: Install ansible-core (${{ matrix.ansible-version }})
+        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Print the ansible version
         run: ansible --version
