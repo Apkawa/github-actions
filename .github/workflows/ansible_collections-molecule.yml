@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate module list
         run: |
-          find roles -maxdepth 2 -mindepth 2 -type d -name molecule | cut -d '/' -f2 | awk NF | jq -sRc 'split("\n") | map(select(length > 0))'
+          find roles -maxdepth 2 -mindepth 2 -type d -name molecule | cut -d '/' -f2 | awk NF | jq -sRc 'split("\n") | map(select(length > 0))' > int_test_roles.json
       - name: Set output variable
         id: json-list
         run: |

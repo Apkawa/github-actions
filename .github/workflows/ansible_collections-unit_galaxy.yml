@@ -140,7 +140,7 @@ jobs:
           tar_file: ${{ steps.identify.outputs.tar_file }}
 
       - name: Uninstall old ansible
-        run: python3 -m pip uninstall -q ansible ansible-base ansible-core
+        run: python3 -m pip uninstall --yes ansible ansible-base ansible-core
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
