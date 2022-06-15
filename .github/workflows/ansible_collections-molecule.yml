@@ -24,7 +24,6 @@ jobs:
       matrix: ${{ steps.json-list.outputs.roles-to-test }}
 
     steps:
-      -
       - name: Check out code
         uses: actions/checkout@v2
         with:
